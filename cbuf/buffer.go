@@ -78,14 +78,18 @@ func (buf *Buffer) ReadFrom(reader io.Reader) (int64, error) {
 	for {
 		buf.Grow(buf.size + minReadSize)
 		n, err := reader.Read(buf.allBytesOffset(buf.size))
-		if err != nil {
-			if err != io.EOF {
-				return 0, err
-			}
+		if n > 0 {
+			size += int64(n)
+			buf.size += n
+		}
+		
+		if err == io.EOF {
 			break
 		}
-		buf.size += n
-		size += int64(n)
+		
+		if err != nil {
+			return size, err
+		}
 	}
 	return size, nil
 }
