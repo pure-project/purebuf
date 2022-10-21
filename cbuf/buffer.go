@@ -84,7 +84,7 @@ func (buf *Buffer) ReadFrom(reader io.Reader) (int64, error) {
 		}
 		
 		if err == io.EOF {
-			break
+			return size, nil
 		}
 		
 		if err != nil {
@@ -143,7 +143,7 @@ func (buf *Buffer) String() string {
 func (buf *Buffer) allBytesOffset(offset int) []byte {
 	l := buf.space - offset
 	hdr := &reflect.SliceHeader{
-		Data: uintptr(buf.ptr),
+		Data: uintptr(buf.ptr) + uintptr(offset),
 		Len:  l,
 		Cap:  l,
 	}
