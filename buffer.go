@@ -30,8 +30,7 @@ func (buf *Buffer) Grow(size int) {
 			grown = size
 		}
 
-		data := buf.Data
-		buf.Data = append(make([]byte, len(data), grown), buf.Data...)
+		buf.Data = append(make([]byte, 0, grown), buf.Data...)
 	}
 }
 
@@ -53,14 +52,18 @@ func (buf *Buffer) ReadFrom(reader io.Reader) (int64, error) {
 		l := len(buf.Data)
 		buf.Grow(l + minReadSize)
 		n, err := reader.Read(buf.Data[l:cap(buf.Data)])
-		if err != nil {
-			if err != io.EOF {
-				return 0, err
-			}
-			break
+		if n > 0 {
+			size += int64(n)
+			buf.Data = buf.Data[:l + n]
 		}
-		size += int64(n)
-		buf.Data = buf.Data[:l + n]
+		
+		if err == io.EOF {
+			return size, nil
+		}
+		
+		if err != nil {
+			return size, err
+		}
 	}
 	return size, nil
 }
